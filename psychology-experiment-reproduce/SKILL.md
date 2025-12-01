@@ -196,9 +196,108 @@ Only after thoroughly understanding the image parameters should you begin writin
 
 Create an `experiment` folder, `cd` into it, and use `uv init` to create the Python environment. Install dependencies through `uv add`, run programs with `uv run`, and avoid using `uv pip install`, since it does not update the dependency list.
 
-Because the experiments may require extensive graphics, prefer using `sympy` and `pyx` for geometric drawing, outputting results to `output/<experiment-number>`. Produce SVG images and also export a PDF with the same name as a backup. Work through the experiments sequentially rather than coding them all at once, and add a `--limit` parameter to restrict the number of trials (rows in the experiment data) processed. Include debug logging that prints the parameters associated with each generated image. After finishing an experiment's code, run it immediately with a timeout and a small `--limit` value to ensure no infinite loops occur; inspect the generated SVGs and their debug logs to confirm the stimuli match the requirements. If they do not, iterate until they do.
+Because the experiments may require extensive graphics, prefer using `sympy` and `pyx` for geometric drawing, outputting results to `output/<experiment-number>`. Produce SVG images and also export a jpg with the same name. Work through the experiments sequentially rather than coding them all at once, and add a `--limit` parameter to restrict the number of trials (rows in the experiment data) processed. Include debug logging that prints the parameters associated with each generated image. After finishing an experiment's code, run it immediately with a timeout and a small `--limit` value to ensure no infinite loops occur; 
+
+!Important: inspect the generated jpg and their debug logs to confirm the stimuli match the requirements. If they do not, iterate until they do.
 
 注意，对于你在 Preparation 阶段创建的每一个图像刺激节点，都应该创建一个独立的图片，而不是将一个实验的一次Trial的所有图像刺激都绘制到一张图中，这是错误的。别忘了看论文中对应的示例图片，确保生成结果的和示例保持相似，而不是生成完全不同的自由发挥的图片。
+
+
+下面是一个使用scipy 和 pyx绘图的简单示例代码：
+```python
+# uv add numpy scipy pyx
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+from pyx import canvas, path, color, style
+import pyx.bitmap
+
+# --------- 一点小几何封装（用 SciPy 做变换）---------
+
+def rotate_points(points, angle_deg):
+    """
+    用 SciPy 把一组 2D 点绕原点旋转 angle_deg 角度。
+    points: (N, 2) 数组
+    """
+    rot = R.from_euler("z", angle_deg, degrees=True)
+    pts3d = np.column_stack([points, np.zeros(len(points))])  # 提升到 3D
+    return rot.apply(pts3d)[:, :2]
+
+
+# 以原点为中心的“+”号，由两条线段组成
+def plus_shape(size):
+    s = size
+    segs = np.array([
+        [[-s, 0], [s, 0]],   # 横线
+        [[0, -s], [0, s]],   # 竖线
+    ])
+    return segs
+
+
+# 用旋转得到 “X” 和 “/”
+def x_shape(size):
+    # 把 “+” 旋转 45° 就是 “X”
+    return np.array([rotate_points(seg, 45) for seg in plus_shape(size)])
+
+
+def slash_shape(size):
+    # 取 “+” 中的横线，旋转 45°，得到斜杠 “/”
+    base = plus_shape(size)[0]           # 只要横线那一段
+    return rotate_points(base, 45)       # (2, 2)
+
+
+# --------- 场景参数 ---------
+
+ring_radius   = 3.0   # 圆环半径（决定八个小圆的位置）
+circle_radius = 0.6   # 每个小圆半径
+marker_size   = 0.35  # 圆里记号的线段长度
+
+n_circles = 8
+angles = np.linspace(0, 2*np.pi, n_circles, endpoint=False)
+centers = np.stack([ring_radius*np.cos(angles),
+                    ring_radius*np.sin(angles)], axis=1)
+
+# SciPy 生成几何“记号”对象（都在局部坐标系，中心在原点）
+plus_segments  = plus_shape(marker_size)
+x_segments     = x_shape(marker_size)
+slash_segment  = slash_shape(marker_size)
+
+# 哪个圆是黄色，哪个圆里画 “/”
+highlight_index = 4   # 左侧那个
+slash_index     = 2   # 上方那个
+
+
+# --------- 用 PyX 画图 ---------
+
+c = canvas.canvas()
+lw = style.linewidth(0.05)   # 线宽
+
+# 中心 “+”
+for seg in plus_segments:
+    (x1, y1), (x2, y2) = seg
+    c.stroke(path.line(x1, y1, x2, y2), [lw])
+
+# 周围 8 个圆
+for i, (cx, cy) in enumerate(centers):
+    # 填充颜色：一个黄，其余灰
+    fillcol = color.rgb(1, 1, 0) if i == highlight_index else color.rgb(0.85, 0.85, 0.85)
+    circle_path = path.circle(cx, cy, circle_radius)
+    c.fill(circle_path, [fillcol])
+    c.stroke(circle_path, [lw])
+
+    # 决定画 “X” 还是 “/”
+    if i == slash_index:
+        # 画一个斜杠
+        (x1, y1), (x2, y2) = slash_segment + np.array([cx, cy])
+        c.stroke(path.line(x1, y1, x2, y2), [lw])
+    else:
+        # 画一个 “X”（两条斜线）
+        for seg in x_segments:
+            (x1, y1), (x2, y2) = seg + np.array([cx, cy])
+            c.stroke(path.line(x1, y1, x2, y2), [lw])
+
+c.writeSVGfile("scipy_pyx_demo")
+pyx.bitmap.render(c, "scipy_pyx_demo.jpg", dpi=300)
+```
 
 ### Step 3: Code Execution
 
