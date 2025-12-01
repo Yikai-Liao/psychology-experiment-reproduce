@@ -198,6 +198,8 @@ Create an `experiment` folder, `cd` into it, and use `uv init` to create the Pyt
 
 Because the experiments may require extensive graphics, prefer using `sympy` and `pyx` for geometric drawing, outputting results to `output/<experiment-number>`. Produce SVG images and also export a PDF with the same name as a backup. Work through the experiments sequentially rather than coding them all at once, and add a `--limit` parameter to restrict the number of trials (rows in the experiment data) processed. Include debug logging that prints the parameters associated with each generated image. After finishing an experiment's code, run it immediately with a timeout and a small `--limit` value to ensure no infinite loops occur; inspect the generated SVGs and their debug logs to confirm the stimuli match the requirements. If they do not, iterate until they do.
 
+注意，对于你在 Preparation 阶段创建的每一个图像刺激节点，都应该创建一个独立的图片，而不是将一个实验的一次Trial的所有图像刺激都绘制到一张图中，这是错误的。别忘了看论文中对应的示例图片，确保生成结果的和示例保持相似，而不是生成完全不同的自由发挥的图片。
+
 ### Step 3: Code Execution
 
 Once a small batch passes, raise the log level so debug output stops, remove the timeout and limit restrictions, and run the code to generate stimuli for all experiment data. Finally, verify that the number of generated images matches expectations.
