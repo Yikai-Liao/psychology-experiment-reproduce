@@ -77,6 +77,9 @@ Note that the paper figures are stored in a separate folder and referenced by th
 - Size parameters (diameter, side length, radius, etc.)
 - Rotation angle (degrees)
 
+尤其是，你需要明确画布的具体分辨率（也就是屏幕的整体分辨率，这样你的X Y坐标才有意义），以及画布的背景颜色，如果没有标注背景颜色默认取白色。
+注意，论文一般会标注visual angle，而visual angle到像素的换算方法会在下面标注。
+
 **Visual Parameters:**
 - Color values (RGB/HEX)
 - Transparency
@@ -202,6 +205,10 @@ Because the experiments may require extensive graphics, prefer using `sympy` and
 
 注意，对于你在 Preparation 阶段创建的每一个图像刺激节点，都应该创建一个独立的图片，而不是将一个实验的一次Trial的所有图像刺激都绘制到一张图中，这是错误的。别忘了看论文中对应的示例图片，确保生成结果的和示例保持相似，而不是生成完全不同的自由发挥的图片。
 
+对于所有的图像刺激，请不要在其中添加文本tag或者标题，这会涉及到字体处理，我们要避免这一点。如过需要表明这是search job，可以将search这种后缀添加到文件名中。
+对于流程图中提到的文本描述的刺激，比如给受试者的Guidance Prompt，可以为每个trial单独创建一个txt文件来保存，注意文件命名，你同样可以增加后缀来区分一个trial内的多个文本描述。
+
+而且，创建刺激图像时，你需要注意图像的画布的颜色和大小，不要只关心形状本身，只有图像处于正确的背景下，有正确的大小比例时，这个刺激才是正确的刺激。
 
 下面是一个使用scipy 和 pyx绘图的简单示例代码：
 ```python
@@ -301,7 +308,7 @@ pyx.bitmap.render(c, "scipy_pyx_demo.jpg", dpi=300)
 
 ### Step 3: Code Execution
 
-Once a small batch passes, raise the log level so debug output stops, remove the timeout and limit restrictions, and run the code to generate stimuli for all experiment data. Finally, verify that the number of generated images matches expectations.
+Once a small batch passes, raise the log level so debug output stops, remove the timeout and limit restrictions, and run the code to generate stimuli (please read the jpg file) for all experiment data. Finally, verify that the number of generated images matches expectations.
 
 Make sure you have completed stimulus generation for every experiment before moving to Step 4.
 
