@@ -27,11 +27,11 @@ llm = LLM(
 
 main_agent = Agent(
     llm=llm,
-    tools=[
-        Tool(name=TerminalTool.name),
-        Tool(name=FileEditorTool.name),
-        Tool(name=TaskTrackerTool.name),
-    ],
+    # tools=[
+    #     Tool(name=TerminalTool.name),
+    #     Tool(name=FileEditorTool.name),
+    #     Tool(name=TaskTrackerTool.name),
+    # ],
 )
 
 reviewer_agent = Agent(
@@ -66,12 +66,39 @@ while current_round < MAX_ROUNDS:
 
     # --- 步骤 B: 运行审查 Agent ---
     # 我们构建一个 Prompt，把主 Agent 的输出来给审查者看
-    review_prompt = (
-        f"Please review the following travel plan. "
-        f"Output 'PASS' if it meets all criteria (budget, logistics, specific names). "
-        f"Output 'FAIL' followed by specific reasons if it needs changes.\n\n"
-        f"--- PLAN TO REVIEW ---\n{proposal}"
-    )
+    review_prompt = f"""
+    You are a strict reviewer for a 3-day London travel plan.
+
+    We will say that the plan **MEETS ALL CRITERIA** if and only if ALL of the following are true:
+
+    1. **Budget**:
+       - The plan must contain at least ONE explicit numeric price range for any category
+         (e.g. hotel price per night, daily food cost, attraction ticket range, etc.).
+
+    2. **Logistics**:
+       - The plan must contain at least TWO of the following logistics details:
+         - public transportation or travel card suggestions
+         - ticket booking or fast-track tips
+         - time-saving tips or advice on grouping nearby attractions
+
+    3. **Specific Names**:
+       - The plan must mention AT LEAST FIVE specific named places, such as:
+         - restaurants, pubs, cafes, or markets
+         - museums, historic sites, or attractions
+
+    Now, read the following plan and check these conditions exactly as written above.
+
+    At the end of your response:
+    - If ALL of the above conditions are satisfied, output ONLY:
+      <<<PASS>>>
+    - Otherwise, output ONLY:
+      <<<Continue>>>
+
+    Do not explain your decision in the last line. The last line must contain ONLY one of the two tags above.
+
+    --- PLAN TO REVIEW ---
+    {proposal}
+    """
 
     # 这是一个新的对话轮次，或者你可以复用同一个 conversation 来保持上下文
     # 如果想每次都从头审查，可以用 reviewer_conv.ask_agent(review_prompt) (无状态)
@@ -83,7 +110,7 @@ while current_round < MAX_ROUNDS:
     print(f"\n[Reviewer Feedback]:\n{review_feedback}\n")
 
     # --- 步骤 C: Python 逻辑判断 ---
-    if "PASS" in review_feedback:
+    if "PASS" in review_feedback.splitlines()[-1]:
         print(">>> Review PASSED! Task Complete. <<<")
         break
     else:
