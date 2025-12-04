@@ -84,7 +84,7 @@ class TripReviewer:
     def route(state: TripPlanState) -> Literal["stop", "loop"]:
         state.round += 1
         last_line = state.reviews[-1].splitlines()[-1]
-        if "<<<PASS>>>" or "<<<FAILED>>>" in last_line:
+        if "<<<PASS>>>" in last_line or "<<<FAILED>>>" in last_line:
             state.done = True
         elif "<<<CONTINUE>>>" in last_line:
             state.done = False

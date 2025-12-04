@@ -28,7 +28,7 @@ At the end of your response:
   <<<CONTINUE>>>
 if the planer tells you nothing, just output <<<FAILED>>>
 
-Do not explain your decision in the last line. The last line must contain ONLY one of the two tags above.
+Do not explain your decision in the last line. The last line must contain ONLY one of the three tags above.
 
 --- PLAN TO REVIEW ---
 {{proposal}}
