@@ -676,7 +676,7 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.123.7"
+version = "0.123.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -684,9 +684,9 @@ dependencies = [
     { name = "starlette" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/75/d2/dba013654cb7a72c99c0fe8856b3598f1289a281d972ce91b62df937a315/fastapi-0.123.7.tar.gz", hash = "sha256:d401701383afcf59bd859ead4fadd9e5aab5f783884d6a3ebe296012fdd53ab2", size = 353537, upload-time = "2025-12-04T08:29:35.277Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/99/8f2d4be9af90b3e56b865a07bdd390398e53d67c9c95c729b5772e528179/fastapi-0.123.8.tar.gz", hash = "sha256:d106de125c8dd3d4341517fa2ae36d9cffe82a6500bd910d3c080e6c42b1b490", size = 354253, upload-time = "2025-12-04T13:02:54.58Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/eb/5a/837bf2c49320272de3e0162c37cdd465cc6a938820a90166a6900a8c34d9/fastapi-0.123.7-py3-none-any.whl", hash = "sha256:31116d87ce36b66c3e853f8c0ba7c3e4b57c148abb0e72547e25257526cd2cc5", size = 111539, upload-time = "2025-12-04T08:29:33.093Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/23/dd53f49e8309454e2c52bdfffe7493cc0f00d10e2fc885d3f4d64c90731f/fastapi-0.123.8-py3-none-any.whl", hash = "sha256:d7c8db95f61d398f7e1491ad52e6b2362755f8ec61c7a740b29e70f18a2901e3", size = 111645, upload-time = "2025-12-04T13:02:53.163Z" },
 ]
 
 [[package]]
@@ -2346,16 +2346,16 @@ wheels = [
 
 [[package]]
 name = "promptbind"
-version = "0.2.0"
+version = "0.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dataclasses" },
     { name = "jinja2" },
     { name = "toml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/59/e0/471ec4778729431181edae4705aa41a948e7956e69bb9465bed510a9960a/promptbind-0.2.0.tar.gz", hash = "sha256:d2a2f0c1da3eb2671ef31db2641727c3fc48ed72bf1c3484199d2055b6026dec", size = 16980, upload-time = "2025-12-04T11:37:01.192Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/16/53/ad5ae44e24aa7e275363292fd511184c87c4c95f4054b4550a265f12090f/promptbind-0.2.2.tar.gz", hash = "sha256:3828b7dfe4a48089bd5643e215b9730318c63fac21e3fd82dd229683988d4c97", size = 16969, upload-time = "2025-12-04T13:00:50.138Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fa/2c/b3c246e089854c2c6a59d27764374f1aabbc9a94b86abd20df2d3a024aa0/promptbind-0.2.0-py3-none-any.whl", hash = "sha256:d06d37a8b019536706d2b7d1bc906795e9f94354e67a7088ec372441988df51f", size = 6336, upload-time = "2025-12-04T11:37:00.119Z" },
+    { url = "https://files.pythonhosted.org/packages/97/e9/00890219ab5092eb25b487702fc81a4cb42b4fa8b3ca7c36db0fc92ac745/promptbind-0.2.2-py3-none-any.whl", hash = "sha256:180dc758d6453a2ba77c7fd1273ca4bf9065ef39f04137b72f3d48bbde5745c0", size = 6322, upload-time = "2025-12-04T13:00:48.833Z" },
 ]
 
 [[package]]
@@ -2507,6 +2507,7 @@ dependencies = [
     { name = "openhands-tools" },
     { name = "openhands-workspace" },
     { name = "promptbind" },
+    { name = "pydantic" },
     { name = "python-dotenv" },
 ]
 
@@ -2518,7 +2519,8 @@ requires-dist = [
     { name = "openhands-sdk", specifier = ">=1.4.0" },
     { name = "openhands-tools", specifier = ">=1.4.0" },
     { name = "openhands-workspace", specifier = ">=1.4.0" },
-    { name = "promptbind", specifier = ">=0.2.0" },
+    { name = "promptbind", specifier = ">=0.2.1" },
+    { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
 ]
 

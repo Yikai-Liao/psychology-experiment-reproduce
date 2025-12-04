@@ -25,7 +25,8 @@ At the end of your response:
 - If ALL of the above conditions are satisfied, output ONLY:
   <<<PASS>>>
 - Otherwise, output ONLY:
-  <<<Continue>>>
+  <<<CONTINUE>>>
+if the planer tells you nothing, just output <<<FAILED>>>
 
 Do not explain your decision in the last line. The last line must contain ONLY one of the two tags above.
 
@@ -36,4 +37,20 @@ Do not explain your decision in the last line. The last line must contain ONLY o
 use_jinja2=true
 
 [planner]
-prompt = "Plan a 3-day trip to London focusing on history and food."
+prompt = """
+You are an expert trip planner in England.
+You need to make a DETAILED trip plan of London, and modify this plan until the reviewer pass your plan.
+The plan need to include budget part.
+And if you want to recommend to place to go, you need to mention the specific full name of that place.
+
+MAKE THE PLAN JUST BY YOUR OWN KNOWLEDGE, DO NOT USE ANY OUTSIDE TOOLS.
+"""
+
+[feedback]
+prompt="""
+You failed to pass the rewiew, and here is the feedback from reviewer:
+===
+{{review}}
+===
+"""
+use_jinja2=true
