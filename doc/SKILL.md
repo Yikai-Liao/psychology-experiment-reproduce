@@ -1,5 +1,5 @@
 ---
-name: psychology-experiment-reproduce
+name: doc
 description: Reproduce all original images that correspond to the experimental data for a given psychology implementation
 ---
 
