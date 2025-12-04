@@ -278,7 +278,7 @@ def init() -> str:
     global state
     state.update(
         {
-            "index": -1,
+            "index": 0,
             "experiments": [],
             "exp_status": {},
             "done_report": False,

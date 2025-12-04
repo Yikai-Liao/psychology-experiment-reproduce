@@ -6,4 +6,8 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastmcp>=2.13.1",
+    "openhands-agent-server>=1.4.0",
+    "openhands-sdk>=1.4.0",
+    "openhands-tools>=1.4.0",
+    "openhands-workspace>=1.4.0",
 ]
