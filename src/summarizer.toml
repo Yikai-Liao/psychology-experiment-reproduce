@@ -1,0 +1,99 @@
+[PaperSummarizer.extract]
+prompt = """
+----
+The paper is as follow:
+{{paper}}
+----
+
+There are two things you need to do:
+Step 1: Experiment Identification
+- Read the full content of the paper
+- Identify and list all experiments described in the paper (Exp1, Exp2... or Exp1a, Exp1b, Exp2...)
+- Generate and json file (a single list without any nest) to keep the paper list, the file is {{exp_name_path}}
+- In this step, you don't need to loop at any other files, or try to discover the whole file structure.
+
+Please start to list all experiments in the json file {{exp_name_path}} WITOUT OPENING "paper.md` again, this is the same file as I what I give you.
+
+### Step 2: Detailed Experiment Design
+In this step, you need to create an `exp_design.md` in workspace according to the following requirments:
+
+#### Global research objectives and hypotheses for each Experiment
+#### Mermaid Flowchart for EACH EXPERIEMNTS
+- Do not just generate a general flowchart, genearte for each experiment
+- Use standard Mermaid syntax
+- Strictly avoid parentheses in node labels
+- Clear node type labeling:
+  - **Image Stimulus Nodes**: Visual stimulus presentation
+  - **Text Stimulus Nodes**: Text information display
+  - **Interaction Nodes**: User choice/reaction points
+  - **Timing Nodes**: Time measurement points
+
+#### Node Annotations (outside Mermaid)
+**Text Stimulus Nodes:**
+- A detailed explaination of the purpose of the text stimulus
+- A detailed explaination of how this text is generated (from some specific template with some vars of according to some group participation)
+- At least one example of the text stilumlus
+
+**Image Stimulus Nodes:**
+- Detailed image composition description, not just some general description like "Visual stimuli to be memorized"
+- Color, shape, size visual features
+
+**User Interaction Nodes:**
+- Specific user actions (key press, mouse click, verbal response)
+- Recorded data metrics:
+  - Reaction time (milliseconds)
+  - Accuracy rate (percentage)
+  - Choice results (binary or multi-category)
+  - Error types
+
+#### Experiment Difference Explanation
+- If experiments are similar, detail specific differences
+- Variable control variations
+- Stimulus material changes
+- Measurement metric additions/modifications
+"""
+use_jinja2=true
+
+[PaperSummarizer.image_details]
+prompt="""
+
+### Step 3: Visual Stimulus Parameter Documentation
+
+#### Image Enumeration
+For each image node used in experiments:
+- Image number and description
+- Usage context in experiment
+
+#### Detailed Parameter Specifications
+First, you need to locate the descriptions in the original paper and insert them into the corresponding sections of `exp_design.md` using Markdown block quotes (`>`).
+
+After that, determine which concrete parameters are required to recreate those stimuli and identify which figure in the paper contains each stimulus example.
+Note that the paper figures are stored in a separate folder and referenced by the paper's markdown file.
+All the following parameters need to be mentioned, evenv if it is set to default value.
+
+**Geometric Parameters:**
+- Position coordinates( in visual agngle, not pixel)
+- Shape type (circle, square, triangle, etc.) and their composition method
+- Size parameters (diameter, side length, radius, etc.)
+- Rotation angle (degrees)
+- Backgroud Size
+
+If Backgroud Size is missing, fall back to the default:
+- 17-inch CRT monitor, $1024 \times 768$ resolution.
+- Viewing distance $D = 50\text{ cm}$.
+
+**Visual Parameters:**
+- Background Color (default to white)
+- Color values (RGB/HEX)
+- Transparency
+- Border style and color
+- Fill style
+- outline or stroke color and width, default to no stroke for all shapes.
+
+#### Parameter Importance
+You need to specify which parameters for an image are randomly chosen in the experiment and which are important for result analysis (and therefore must be recorded).
+
+If a parameter is random and never recorded, describe all possible cases and their probabilities.
+
+If a parameter should be recorded, list every case (for example, four different shape types).
+"""
