@@ -1,99 +1,315 @@
+# ============================================================
+# summarizer.toml (reconstruction-oriented)
+# Purpose:
+#   Extract experiments from a paper (Markdown text) and produce
+#   a reconstruction-grade exp_design.md focused on image/text stimuli.
+#
+# Design principles:
+#   - Machine-readable YAML blocks embedded in Markdown
+#   - Explicit reported/default/missing flags
+#   - Strict workspace file-safety rules
+#   - Generic example only (fictional values)
+# ============================================================
+
 [PaperSummarizer.extract]
 prompt = """
+You are an agent operating inside a workspace.
+
+========================
+FILE SAFETY RULES (HARD)
+========================
+- You MAY READ any existing file.
+- You MAY CREATE or MODIFY ONLY:
+  1) {{exp_name_path}}
+  2) exp_design.md
+- You MUST NOT create, modify, or delete ANY OTHER files.
+- DO NOT create temporary drafts such as:
+  *_new.md, *_updated.md, temp_*.md, new_section*.md, summary_*.md
+- If you think a draft is necessary, write it inside exp_design.md under '## Scratchpad'
+  and REMOVE that section in your final output.
+
+========================
+INPUT
+========================
+The paper content follows:
 ----
-The paper is as follow:
 {{paper}}
 ----
 
-There are two things you need to do:
+========================
+YOUR OVERALL GOAL
+========================
+Produce a reconstruction-grade experimental design specification.
+
+This specification must be sufficient to:
+1) enumerate every experiment,
+2) describe each experiment's trial structure,
+3) define text stimuli and interaction mappings,
+4) list ALL distinct image stimuli,
+5) provide a per-trial record schema describing which variables must be logged
+   to reconstruct the original stimuli.
+
+IMPORTANT:
+- You are NOT writing a narrative review. This is a compact, structured reconstruction spec.
+- You are writing a structured design spec.
+- Use YAML blocks for machine-readable content.
+- Do NOT use Markdown tables (they are hard to edit and parse reliably).
+
+========================
+GLOBAL FORMAT RULES
+========================
+- Output for {{exp_design_path}} MUST be valid JSON.
+- Do NOT embed Markdown tables.
+- Do NOT embed YAML blocks.
+- Use compact param objects ONLY when provenance matters:
+
+  "param_name": {"value": <...>, "source": "<paper|figure|derived|default>", "status": "<reported|derived|default_assumed|missing>"}
+
+- If a parameter is essential but missing, you have TWO allowed ways:
+  (A) include a compact missing param:
+      "param_name": {"value": "unknown", "source": "paper", "status": "missing"}
+  (B) prefer listing it in:
+      "missing_critical": ["path.to.param", ...]
+  Do NOT create deep missing subtrees.
+
+- The string "must_record_per_trial" MUST NOT appear anywhere.
+
+========================
+LENGTH CONTROL (MANDATORY)
+========================
+To prevent bloat:
+- Only include parameters that are:
+  a) explicitly reported in the paper/figure, OR
+  b) truly reconstruction-critical.
+- Do NOT enumerate non-critical rendering defaults.
+- Prefer short lists and references to libraries.
+
+
+You must complete TWO steps in order.
+
+============================================================
 Step 1: Experiment Identification
-- Read the full content of the paper
-- Identify and list all experiments described in the paper (Exp1, Exp2... or Exp1a, Exp1b, Exp2...)
-- Generate and json file (a single list without any nest) to keep the paper list, the file is {{exp_name_path}}
-- In this step, you don't need to loop at any other files, or try to discover the whole file structure.
+============================================================
+- Read the full content of the paper.
+- Identify and list ALL experiments described (Exp1, Exp2... or Exp1a, Exp1b...).
+- Write a JSON file at {{exp_name_path}} containing a single flat list of experiment IDs.
+  Example:
+  ["Exp1", "Exp2", "Exp3a"]
 
-Please start to list all experiments in the json file {{exp_name_path}} WITOUT OPENING "paper.md` again, this is the same file as I what I give you.
+In this step:
+- Do NOT scan or infer the workspace structure.
+- Do NOT touch exp_design.md yet.
 
-### Step 2: Detailed Experiment Design
-In this step, you need to create an `exp_design.md` in workspace according to the following requirments:
+========================
+Step 2: Create exp_design.md
+========================
+Create or overwrite exp_design.md with the following REQUIRED top-level structure:
 
-#### Global research objectives and hypotheses for each Experiment
-#### Mermaid Flowchart for EACH EXPERIEMNTS
-- Do not just generate a general flowchart, genearte for each experiment
-- Use standard Mermaid syntax
-- Strictly avoid parentheses in node labels
-- Clear node type labeling:
-  - **Image Stimulus Nodes**: Visual stimulus presentation
-  - **Text Stimulus Nodes**: Text information display
-  - **Interaction Nodes**: User choice/reaction points
-  - **Timing Nodes**: Time measurement points
+The MD must include:
+1) Paper-level apparatus summary
+2) One section per experiment
+3) A Mermaid trial flow diagram per experiment
+4) Embedded COMPACT JSON blocks to store reconstruction-critical data, the example is as following:
+{
+  "paper_meta": {
+    "title": "...",
+    "year": "...",
+    "authors": [...]
+  },
+  "apparatus": {
+    "display": {
+      "type": "...",
+      "size_inch": {"value": "...", "source": "paper", "status": "reported"},
+      "refresh_hz": {"value": "...", "source": "paper", "status": "reported"},
+      "resolution_px": {"value": [.., ..], "source": "paper", "status": "reported"},
+      "viewing_distance_cm": {"value": "...", "source": "paper", "status": "reported"},
+      "background_rgb": {"value": [..,..,..], "source": "paper", "status": "reported"}
+    },
+    "software": {
+      "platform": "...",
+      "toolbox": "..."
+    },
+    "color_management": {
+      "color_space": {"value": "...", "source": "paper", "status": "reported"},
+      "gamma_corrected": {"value": "...", "source": "paper", "status": "reported"}
+    }
+  },
+  "stimulus_libraries": {
+    "color_sets": [],
+    "shape_sets": [],
+    "text_templates": [],
+    "other_assets": []
+  },
+  "experiments": [
+    {
+      "id": "ExpX",
+      "short_title": "...",
+      "objective": "...",
+      "hypotheses": [...],
 
-#### Node Annotations (outside Mermaid)
-**Text Stimulus Nodes:**
-- A detailed explaination of the purpose of the text stimulus
-- A detailed explaination of how this text is generated (from some specific template with some vars of according to some group participation)
-- At least one example of the text stilumlus
+      "participants": {
+        "n": {"value": "...", "source": "paper", "status": "reported"},
+        "exclusions": "...",
+        "grouping": "..."
+      },
 
-**Image Stimulus Nodes:**
-- Detailed image composition description, not just some general description like "Visual stimuli to be memorized"
-- Color, shape, size visual features
+      "groups": [
+        {"id": "...", "description": "..."}
+      ],
+      "conditions": [
+        {"id": "...", "description": "..."}
+      ],
+      "critical_factors": [
+        {"name": "...", "levels": [...]}
+      ],
 
-**User Interaction Nodes:**
-- Specific user actions (key press, mouse click, verbal response)
-- Recorded data metrics:
-  - Reaction time (milliseconds)
-  - Accuracy rate (percentage)
-  - Choice results (binary or multi-category)
-  - Error types
+      "trial_flow": [
+        {
+          "event": "fixation",
+          "modality": "image",
+          "stim": "I_fix",
+          "duration_ms": {"value": "...", "source": "paper", "status": "reported"}
+        }
+      ],
 
-#### Experiment Difference Explanation
-- If experiments are similar, detail specific differences
-- Variable control variations
-- Stimulus material changes
-- Measurement metric additions/modifications
+      "text_stimuli": [
+        {
+          "id": "T1",
+          "role": "cue|instruction|feedback|label|other",
+          "content_template": "...",
+          "generation_rule": "...",
+          "examples": [...],
+          "presentation": {
+            "position": {"value": ["...", "..."], "unit": "deg", "source": "paper", "status": "reported"},
+            "font_family": "...",
+            "font_size_pt": {"value": "...", "source": "paper", "status": "reported"},
+            "font_color_rgb": {"value": [..,..,..], "source": "paper", "status": "reported"}
+          },
+          "timing": {
+            "duration_ms": {"value": "...", "source": "paper", "status": "reported"}
+          },
+          "evidence_quote": "..."
+        }
+      ],
+
+      "responses": [
+        {
+          "id": "R1",
+          "role": "search_response|memory_response|confidence|other",
+          "device": "keyboard|mouse|other",
+          "mapping": [
+            {"key": "...", "meaning": "..."}
+          ],
+          "recorded_metrics": ["rt_ms", "correct", "choice"]
+        }
+      ],
+
+      "image_stimuli": [
+        {
+          "id": "I_mem",
+          "role": "memory_display|search_display|probe|fixation|other",
+
+          "components": ["..."],
+
+          "layout_rule": {"value": "...", "source": "paper", "status": "reported"},
+
+          "parameters": {
+            "item_count": {"value": "...", "source": "paper", "status": "reported"},
+            "item_size_deg": {"value": "...", "source": "paper", "status": "reported"},
+            "radius_deg": {"value": "...", "source": "paper", "status": "reported"},
+            "color_set_ref": {"value": "CSETx", "source": "paper", "status": "reported"},
+            "shape_set_ref": {"value": "SSETx", "source": "paper", "status": "reported"},
+            "orientation_rule": {"value": "...", "source": "paper", "status": "reported"}
+          },
+
+          "visual": {
+            "foreground_rgb": {"value": [..,..,..], "source": "paper", "status": "reported"},
+            "border_style": {"value": "...", "source": "paper", "status": "reported"}
+          },
+
+          "timing": {
+            "duration_ms": {"value": "...", "source": "paper", "status": "reported"}
+          },
+
+          "randomization": {
+            "factors": [
+              {
+                "name": "...",
+                "levels_ref": "CSETx|SSETx|explicit_list",
+                "distribution": "...",
+                "constraints": "..."
+              }
+            ],
+            "counterbalancing": "..."
+          },
+
+          "evidence_quote": "..."
+        }
+      ],
+
+      "recording": {
+        "paper_required": [],
+        "reconstruction_critical": [],
+        "analysis_useful": []
+      },
+
+      "missing_critical": [],
+      "notes": "..."
+    }
+  ]
+}
+
+Rules for libraries:
+- Extract and define color sets and shape sets at library level when possible.
+- Experiments should reference libraries by *_ref fields.
+
+Rules for randomization:
+- List trial-varying factors under randomization.factors.
+- Do NOT attach must_record_per_trial to factors.
+- Recording priorities belong ONLY in recording.* arrays.
+
+Rules for missing:
+- Use a SINGLE one-line JSON list:
+  "missing_critical": ["path.to.param", ...]
+- Do NOT create verbose missing trees.
+
+After completing Step 2, STOP.
 """
 use_jinja2=true
-
 [PaperSummarizer.image_details]
-prompt="""
+prompt = """
+========================
+YOUR GOAL
+========================
+You are refining `exp_design.md` created by the extract prompt.
+Enrich ONLY reconstruction-critical image details in a COMPACT manner.
 
-### Step 3: Visual Stimulus Parameter Documentation
+Hard constraints:
+- Output remains valid JSON.
+- Keep "value/source/status" full names.
+- Do NOT introduce large blocks of unknown fields.
+- The string "must_record_per_trial" MUST NOT appear anywhere.
 
-#### Image Enumeration
-For each image node used in experiments:
-- Image number and description
-- Usage context in experiment
+What to add:
+- For each image stimulus that the paper clearly defines:
+  - key geometry rules (layout_rule, item_count, size, radius, explicit positions if reported)
+  - key visual identity parameters (colors, shape identity, orientation rules)
+  - references to stimulus libraries
 
-#### Detailed Parameter Specifications
-First, you need to locate the descriptions in the original paper and insert them into the corresponding sections of `exp_design.md` using Markdown block quotes (`>`).
+What NOT to add unless explicitly reported:
+- anti-aliasing, gamma details, noise, masks, motion, flicker, z-order,
+  stroke join/cap, etc.
 
-After that, determine which concrete parameters are required to recreate those stimuli and identify which figure in the paper contains each stimulus example.
-Note that the paper figures are stored in a separate folder and referenced by the paper's markdown file.
-All the following parameters need to be mentioned, evenv if it is set to default value.
+Missing handling:
+- Prefer appending to the experiment's "missing_critical" list.
+  Example:
+  "missing_critical": ["experiments[0].image_stimuli[I_fix].parameters.size_deg"]
+- Use compact unknown param objects only when the parameter is repeatedly referenced
+  across the spec and needs an inline placeholder.
 
-**Geometric Parameters:**
-- Position coordinates( in visual agngle, not pixel)
-- Shape type (circle, square, triangle, etc.) and their composition method
-- Size parameters (diameter, side length, radius, etc.)
-- Rotation angle (degrees)
-- Backgroud Size
+Ensure randomization–recording consistency:
+- If you add a trial-varying factor under image_stimuli[].randomization.factors,
+  ensure the experiment-level recording.reconstruction_critical references that factor name.
 
-If Backgroud Size is missing, fall back to the default:
-- 17-inch CRT monitor, $1024 \times 768$ resolution.
-- Viewing distance $D = 50\text{ cm}$.
-
-**Visual Parameters:**
-- Background Color (default to white)
-- Color values (RGB/HEX)
-- Transparency
-- Border style and color
-- Fill style
-- outline or stroke color and width, default to no stroke for all shapes.
-
-#### Parameter Importance
-You need to specify which parameters for an image are randomly chosen in the experiment and which are important for result analysis (and therefore must be recorded).
-
-If a parameter is random and never recorded, describe all possible cases and their probabilities.
-
-If a parameter should be recorded, list every case (for example, four different shape types).
+After updating `exp_design.md`, STOP.
 """

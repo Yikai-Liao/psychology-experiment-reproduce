@@ -13,9 +13,7 @@ import tempfile
 import uuid
 import json
 
-from .monkey_patches import apply_reasoning_content_patch
 
-apply_reasoning_content_patch()
 
 from .state import ReproduceState
 

@@ -3,6 +3,10 @@ from pathlib import Path
 from src.summarizer import PaperSummarizer
 from src.state import ReproduceState
 
+from src.monkey_patches import apply_reasoning_content_patch
+
+apply_reasoning_content_patch()
+
 def main():
     state = ReproduceState(
         paper_dir=Path("paper"),
